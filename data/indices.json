@@ -1,0 +1,55 @@
+{
+  "true_color": { "bands": ["RED", "GREEN", "BLUE"], "type": "composite" },
+  "standard_false_color": { "bands": ["NIR", "RED", "GREEN"], "type": "composite" },
+  "enhanced_true_color": { "bands": ["SWIR1", "NIR", "GREEN"], "type": "composite" },
+  "agriculture_false_color": { "bands": ["NIR", "SWIR1", "GREEN"], "type": "composite" },
+  "infrared_false_color": { "bands": ["NIR", "SWIR1", "SWIR2"], "type": "composite" },
+  "ndvi": {
+    "bands": ["NDVI"],
+    "formula": "NDVI = (NIR - RED) / (NIR + RED)",
+    "palette": ["red", "orange", "lightyellow", "lightgreen", "green"],
+    "type": "indices"
+  },
+  "nbr": {
+    "bands": ["NBR"],
+    "formula": "NBR = (NIR - SWIR1) / (NIR + SWIR1)",
+    "palette": ["red", "orange", "lightyellow", "lightgreen", "green"],
+    "type": "indices"
+  },
+  "nbr2": {
+    "bands": ["NBR2"],
+    "formula": "NBR2 = (SWIR1 - SWIR2) / (SWIR1 + SWIR2)",
+    "palette": ["red", "orange", "lightyellow", "lightgreen", "green"],
+    "type": "indices"
+  },
+  "evi": {
+    "bands": ["EVI"],
+    "formula": "EVI = 2.5 * (NIR - RED) / (NIR + 6 * RED - 7.5 * BLUE + 1)",
+    "palette": ["red", "orange", "lightyellow", "lightgreen", "green"],
+    "type": "indices"
+  },
+  "savi": {
+    "bands": ["SAVI"],
+    "formula": "SAVI = (NIR - RED) * 1.5 / (NIR + RED + 0.5)",
+    "palette": ["red", "orange", "lightyellow", "lightgreen", "green"],
+    "type": "indices"
+  },
+  "ndmi": {
+    "bands": ["NDMI"],
+    "formula": "NDMI = (NIR - SWIR1) / (NIR + SWIR1)",
+    "palette": ["red", "orange", "white", "lightskyblue", "blue"],
+    "type": "indices"
+  },
+  "ndwi": {
+    "bands": ["NDWI"],
+    "formula": "NDWI = (GREEN - NIR) / (GREEN + NIR)",
+    "palette": ["red", "orange", "white", "lightskyblue", "blue"],
+    "type": "indices"
+  },
+  "mndwi": {
+    "bands": ["MNDWI"],
+    "formula": "MNDWI = (GREEN - SWIR1) / (GREEN + SWIR1)",
+    "palette": ["red", "orange", "white", "lightskyblue", "blue"],
+    "type": "indices"
+  }
+}

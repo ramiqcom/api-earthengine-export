@@ -1,0 +1,58 @@
+{
+  "planet": {
+    "ids": [
+      "projects/planet-nicfi/assets/basemaps/africa",
+      "projects/planet-nicfi/assets/basemaps/asia",
+      "projects/planet-nicfi/assets/basemaps/america"
+    ],
+    "resolution": 5,
+    "bands": {
+      "NIR": "N",
+      "RED": "R",
+      "GREEN": "G",
+      "BLUE": "B"
+    },
+    "multiplier": 0.0001,
+    "offset": 0,
+    "indices": ["NDVI", "NDWI"]
+  },
+
+  "landsat": {
+    "ids": ["LANDSAT/LC08/C02/T1_L2", "LANDSAT/LC09/C02/T1_L2"],
+    "resolution": 30,
+    "bands": {
+      "SWIR2": "SR_B7",
+      "SWIR1": "SR_B6",
+      "NIR": "SR_B5",
+      "RED": "SR_B4",
+      "GREEN": "SR_B3",
+      "BLUE": "SR_B2",
+      "COASTAL": "SR_B1"
+    },
+    "multiplier": 0.0000275,
+    "offset": -0.2,
+    "indices": ["NDVI", "NDWI", "EVI", "NBR", "NBR2", "NDMI", "SAVI", "MNDWI"]
+  },
+
+  "sentinel-2": {
+    "ids": ["COPERNICUS/S2_SR_HARMONIZED"],
+    "resolution": 10,
+    "bands": {
+      "SWIR2": "B12",
+      "SWIR1": "B11",
+      "WV": "B9",
+      "RE4": "B8A",
+      "NIR": "B8",
+      "RE3": "B7",
+      "RE2": "B6",
+      "RE1": "B5",
+      "RED": "B4",
+      "GREEN": "B3",
+      "BLUE": "B2",
+      "COASTAL": "B1"
+    },
+    "multiplier": 0.0001,
+    "offset": 0,
+    "indices": ["NDVI", "NDWI", "EVI", "NBR", "NBR2", "NDMI", "SAVI", "MNDWI"]
+  }
+}
