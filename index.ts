@@ -2,6 +2,9 @@ import { config } from 'dotenv';
 import fastify from 'fastify';
 import { authenticate } from './module/ee';
 
+// Define port
+const port = (process.env.PORT || 8080) as number;
+
 // Run dotenv
 config();
 
@@ -26,7 +29,7 @@ app.get('/', async (req, res) => {
 
 // Run the app
 try {
-  await app.listen({ port: 3000 });
+  await app.listen({ port });
 } catch (err) {
   console.log(err);
   process.exit(1);
