@@ -11,6 +11,7 @@ const key = process.env.SERVICE_ACCOUNT_KEY;
 // App setting
 const app = fastify({
   logger: true,
+  trustProxy: true,
 });
 
 // App route
@@ -27,6 +28,8 @@ app.get('/', async (req, res) => {
 try {
   await app.listen({ port: 3000 });
 } catch (err) {
-  app.log.error(err);
+  console.log(err);
   process.exit(1);
 }
+
+export default app;
