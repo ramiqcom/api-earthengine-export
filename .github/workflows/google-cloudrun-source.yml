@@ -82,7 +82,6 @@ jobs:
           # NOTE: If required, update to the appropriate source folder
           source: ./
           secrets: |-
-            # As an environment variable:
             SERVICE_ACCOUNT_KEY='${{ env.CREDENTIALS }}'
 
       # If required, use the Cloud Run url output in later steps
