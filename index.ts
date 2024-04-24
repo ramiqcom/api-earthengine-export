@@ -14,6 +14,8 @@ const app = fastify({
   trustProxy: true,
 });
 
+export default app;
+
 // App route
 app.get('/', async (req, res) => {
   try {
@@ -31,5 +33,3 @@ try {
   console.log(err);
   process.exit(1);
 }
-
-export default app;
