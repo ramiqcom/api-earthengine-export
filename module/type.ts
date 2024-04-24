@@ -13,15 +13,17 @@ export interface MapId {
   image: Record<string, any>;
 }
 
-interface RequestBody {
+export type satellite = 'planet' | 'landsat' | 'sentinel-2';
+
+export interface RequestBody {
   geojson: FeatureCollection;
   date: [string, string];
   composite: 'latest' | 'cloudless' | 'median';
-  satellite: 'planet' | 'landsat' | 'sentinel-2';
+  satellite: satellite;
 }
 
 export interface RequestView extends RequestBody {
-  visualization: 'true_color' | 'standard_false_color' | 'ndvi' | 'ndwi';
+  visualization: string;
 }
 
 export interface RequestExport extends RequestBody {

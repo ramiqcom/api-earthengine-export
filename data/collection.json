@@ -1,22 +1,4 @@
 {
-  "planet": {
-    "ids": [
-      "projects/planet-nicfi/assets/basemaps/africa",
-      "projects/planet-nicfi/assets/basemaps/asia",
-      "projects/planet-nicfi/assets/basemaps/america"
-    ],
-    "resolution": 5,
-    "bands": {
-      "NIR": "N",
-      "RED": "R",
-      "GREEN": "G",
-      "BLUE": "B"
-    },
-    "multiplier": 0.0001,
-    "offset": 0,
-    "indices": ["NDVI", "NDWI"]
-  },
-
   "landsat": {
     "ids": ["LANDSAT/LC08/C02/T1_L2", "LANDSAT/LC09/C02/T1_L2"],
     "resolution": 30,
@@ -29,9 +11,11 @@
       "BLUE": "SR_B2",
       "COASTAL": "SR_B1"
     },
+    "cloud": "CLOUD_COVER",
     "multiplier": 0.0000275,
     "offset": -0.2,
-    "indices": ["NDVI", "NDWI", "EVI", "NBR", "NBR2", "NDMI", "SAVI", "MNDWI"]
+    "indices": ["NDVI", "NDWI", "EVI", "NBR", "NBR2", "NDMI", "SAVI", "MNDWI"],
+    "cloud_col": null
   },
 
   "sentinel-2": {
@@ -51,8 +35,30 @@
       "BLUE": "B2",
       "COASTAL": "B1"
     },
+    "cloud": "CLOUDY_PIXEL_PERCENTAGE",
     "multiplier": 0.0001,
     "offset": 0,
-    "indices": ["NDVI", "NDWI", "EVI", "NBR", "NBR2", "NDMI", "SAVI", "MNDWI"]
+    "indices": ["NDVI", "NDWI", "EVI", "NBR", "NBR2", "NDMI", "SAVI", "MNDWI"],
+    "cloud_col": "GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED"
+  },
+
+  "planet": {
+    "ids": [
+      "projects/planet-nicfi/assets/basemaps/africa",
+      "projects/planet-nicfi/assets/basemaps/asia",
+      "projects/planet-nicfi/assets/basemaps/americas"
+    ],
+    "resolution": 5,
+    "bands": {
+      "NIR": "N",
+      "RED": "R",
+      "GREEN": "G",
+      "BLUE": "B"
+    },
+    "cloud": null,
+    "multiplier": 0.0001,
+    "offset": 0,
+    "indices": ["NDVI", "NDWI"],
+    "cloud_col": null
   }
 }
