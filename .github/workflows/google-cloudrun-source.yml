@@ -79,7 +79,7 @@ jobs:
         with:
           service: '${{ env.SERVICE }}'
           region: '${{ env.REGION }}'
-          image: 'gcr.io/cloudrun/hello:latest'
+          image: 'Dockerfile'
 
       # If required, use the Cloud Run url output in later steps
       - name: Show Output
