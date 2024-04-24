@@ -48,19 +48,19 @@ name: Deploy to Cloud Run from Source Action
 
 on:
   push:
-    branches: ['main', 'master']
+    branches: [main, master]
 
 env:
-  CREDENTIALS: '${{ secrets.GCP_CREDENTIALS }}' # TODO: update Google Cloud project id
-  SERVICE: '${{ vars.SERVICE_NAME }}' # TODO: update Cloud Run service name
-  REGION: '${{ vars.REGION }}' # TODO: update Cloud Run service region
+  CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }} # TODO: update Google Cloud project id
+  SERVICE: ${{ vars.SERVICE_NAME }} # TODO: update Cloud Run service name
+  REGION: ${{ vars.REGION }} # TODO: update Cloud Run service region
 
 jobs:
   deploy:
     # Add 'id-token' with the intended permissions for workload identity federation
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: read
+      id-token: write
 
     runs-on: ubuntu-latest
     steps:
@@ -69,9 +69,9 @@ jobs:
 
       - name: Google Auth
         id: auth
-        uses: 'google-github-actions/auth@v2'
+        uses: google-github-actions/auth@v2
         with:
-          credentials_json: '${{ env.CREDENTIALS }}'
+          credentials_json: ${{ env.CREDENTIALS }}
 
       - name: Deploy to Cloud Run
         id: deploy
@@ -81,6 +81,8 @@ jobs:
           region: ${{ env.REGION }}
           # NOTE: If required, update to the appropriate source folder
           source: ./
+          env_vars: |
+            SERVICE_ACCOUNT_KEY=${{ env.CREDENTIALS }}
 
       # If required, use the Cloud Run url output in later steps
       - name: Show Output
