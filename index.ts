@@ -14,8 +14,6 @@ const app = fastify({
   trustProxy: true,
 });
 
-export default app;
-
 // App route
 app.get('/', async (req, res) => {
   try {
