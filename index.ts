@@ -1,3 +1,4 @@
+import ee from '@google/earthengine';
 import { config } from 'dotenv';
 import fastify from 'fastify';
 import compositeImage from './module/composite';
@@ -32,6 +33,9 @@ app.post('/view', async (req, res) => {
 
   try {
     await authenticate(key);
+
+    ee.data.setWorkloadTag('app-view');
+
     const image = compositeImage({
       satellite,
       date,
