@@ -3,7 +3,8 @@ import { config } from 'dotenv';
 import fastify from 'fastify';
 import compositeImage from './module/composite';
 import { authenticate } from './module/ee';
-import { RequestView } from './module/type';
+import exportImage from './module/export';
+import { RequestExport, RequestView } from './module/type';
 import view from './module/view';
 
 // Google Cloud Run will set this environment variable for you, so
@@ -44,6 +45,40 @@ app.post('/view', async (req, res) => {
     });
 
     const result = await view(image, visualization, satellite);
+
+    res.send(result).status(200).header('Content-Type', 'appplication/json');
+  } catch ({ message }) {
+    res.send({ message }).status(400).header('Content-Type', 'application/json');
+  }
+});
+
+// App route for exporting
+app.post('/export', async (req, res) => {
+  const { satellite, date, composite, geojson, bucket, fileNamePrefix } = req.body as RequestExport;
+
+  try {
+    await authenticate(key);
+
+    ee.data.setWorkloadTag('app-view');
+
+    const { image, resolution } = compositeImage({
+      satellite,
+      date,
+      composite,
+      geojson,
+    });
+
+    const time = new Date().getTime();
+    const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
+
+    const result = await exportImage({
+      image,
+      resolution,
+      bucket,
+      fileNamePrefix,
+      region: geojson,
+      description,
+    });
 
     res.send(result).status(200).header('Content-Type', 'appplication/json');
   } catch ({ message }) {

@@ -32,7 +32,33 @@ export interface RequestExport extends RequestBody {
 }
 
 export interface RequestExportStatus {
-  operationName: string[];
+  name: string;
+  metadata: {
+    '@type': string;
+    state: 'ENDING' | 'RUNNING' | 'CANCELLING' | 'SUCCEEDED' | 'CANCELLED' | 'FAILED';
+    description: string;
+    priority: number;
+    createTime: string;
+    updateTime: string;
+    startTime: string;
+    endTime?: string;
+    type: 'EXPORT_IMAGE' | 'EXPORT_FEATURES' | 'EXPORT_MAP';
+    attempt?: number;
+    batchEecuUsageSeconds?: number;
+    destinationUris?: string[];
+    progress?: number;
+    stages?: {
+      completeWorkUnits: number;
+      description: string;
+      displayName: string;
+      totalWorkUnits: number;
+    }[];
+    done?: boolean;
+    error?: string;
+    response: {
+      '@type': string;
+    };
+  };
 }
 
 export interface ResponseView {

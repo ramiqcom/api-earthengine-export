@@ -1,5 +1,5 @@
 import ee from '@google/earthengine';
-import { MapId, VisObject } from '../module/type';
+import { MapId, RequestExportStatus, VisObject } from '../module/type';
 
 /**
  * Function to authenticate EE
@@ -47,6 +47,31 @@ export function getMapId(
   return new Promise((resolve, reject) => {
     data.getMapId(vis, (object: MapId, error: string) =>
       error ? reject(new Error(error)) : resolve(object),
+    );
+  });
+}
+
+/**
+ * Function to start export
+ * @param task Export task object
+ */
+export async function startExport(task: ee.batch): Promise<void> {
+  return new Promise((resolve, reject) => {
+    task.start(
+      () => resolve(),
+      (err: string) => reject(new Error(err)),
+    );
+  });
+}
+
+/**
+ * Function to get metadata of export
+ * @returns Record of the task
+ */
+export async function exportMetadata(): Promise<RequestExportStatus> {
+  return new Promise((resolve, reject) => {
+    ee.data.listOperations(1, (data: Record<string, any>[], err: string) =>
+      data ? resolve(data[0].Serializable$values) : reject(new Error(err)),
     );
   });
 }
