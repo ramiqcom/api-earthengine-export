@@ -53,11 +53,11 @@ export interface RequestExportStatus {
       displayName: string;
       totalWorkUnits: number;
     }[];
-    done?: boolean;
-    error?: string;
-    response: {
-      '@type': string;
-    };
+  };
+  done?: boolean;
+  error?: string;
+  response: {
+    '@type': string;
   };
 }
 

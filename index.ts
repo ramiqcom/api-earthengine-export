@@ -2,7 +2,7 @@ import ee from '@google/earthengine';
 import { config } from 'dotenv';
 import fastify from 'fastify';
 import compositeImage from './module/composite';
-import sendDatabase from './module/database';
+import { sendDatabase, updateDatabase } from './module/database';
 import { authenticate, cancelExport, exportMetadata } from './module/ee';
 import exportImage from './module/export';
 import { RequestExport, RequestView } from './module/type';
@@ -36,10 +36,6 @@ app.addHook('onRequest', async () => {
 
 // Hook for error
 app.addHook('onError', async (req, res, error) => {
-  // Cancel operation when error
-  const { name } = await exportMetadata();
-  await cancelExport(name);
-
   res.send({ message: error }).status(404).header('Content-Type', 'application/json');
 });
 
@@ -64,34 +60,47 @@ app.post('/view', async (req, res) => {
 
 // App route for exporting geotiff
 app.post('/export/geotiff', async (req, res) => {
-  const { satellite, date, composite, geojson, bucket, fileNamePrefix } = req.body as RequestExport;
+  try {
+    const { satellite, date, composite, geojson, bucket, fileNamePrefix } =
+      req.body as RequestExport;
 
-  // Set work tag
-  ee.data.setWorkloadTag('app-export-geotiff');
+    // Set work tag
+    ee.data.setWorkloadTag('app-export-geotiff');
 
-  const { image, resolution } = compositeImage({
-    satellite,
-    date,
-    composite,
-    geojson,
-  });
+    const { image, resolution } = compositeImage({
+      satellite,
+      date,
+      composite,
+      geojson,
+    });
 
-  const time = new Date().getTime();
-  const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
+    const time = new Date().getTime();
+    const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
 
-  const result = await exportImage({
-    image,
-    resolution,
-    bucket,
-    fileNamePrefix,
-    region: geojson,
-    description,
-  });
+    const result = await exportImage({
+      image,
+      resolution,
+      bucket,
+      fileNamePrefix,
+      region: geojson,
+      description,
+    });
 
-  // Send database update
-  await sendDatabase(req.body as RequestExport, result);
+    // Send database update
+    await sendDatabase(req.body as RequestExport, result);
 
-  res.send(result).status(200).header('Content-Type', 'appplication/json');
+    res.send(result).status(200).header('Content-Type', 'appplication/json');
+  } catch ({ message }) {
+    // Cancel operation when error
+    const { name } = await exportMetadata();
+    await cancelExport(name);
+  }
+});
+
+// App route to update every task to the database
+app.get('/update', async (req, res) => {
+  const message = await updateDatabase();
+  res.send({ message }).status(200).header('Content-Type', 'application/json');
 });
 
 // Run the appss

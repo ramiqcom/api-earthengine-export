@@ -86,3 +86,14 @@ export async function cancelExport(operationName: string): Promise<void> {
     );
   });
 }
+
+/**
+ * Function to get export metadata per operation
+ */
+export async function getOperation(name: string): Promise<RequestExportStatus> {
+  return new Promise((resolve, reject) => {
+    ee.data.getOperation(name, (data: Record<string, any>, err: string) =>
+      err ? reject(new Error(err)) : resolve(data.Serializable$values),
+    );
+  });
+}
