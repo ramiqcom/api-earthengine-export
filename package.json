@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/bigquery": "^7.6.1",
     "@google/earthengine": "^0.1.399",
     "@turf/turf": "^6.5.0",
     "@types/node": "^20.12.7",
@@ -23,6 +24,7 @@
     "dotenv": "^16.4.5",
     "eslint": "^8.57.0",
     "fastify": "^4.26.2",
+    "nodemailer": "^6.9.13",
     "nodemon": "^3.1.0",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",

@@ -2,7 +2,8 @@ import ee from '@google/earthengine';
 import { config } from 'dotenv';
 import fastify from 'fastify';
 import compositeImage from './module/composite';
-import { authenticate } from './module/ee';
+import sendDatabase from './module/database';
+import { authenticate, cancelExport, exportMetadata } from './module/ee';
 import exportImage from './module/export';
 import { RequestExport, RequestView } from './module/type';
 import view from './module/view';
@@ -35,6 +36,10 @@ app.addHook('onRequest', async () => {
 
 // Hook for error
 app.addHook('onError', async (req, res, error) => {
+  // Cancel operation when error
+  const { name } = await exportMetadata();
+  await cancelExport(name);
+
   res.send({ message: error }).status(404).header('Content-Type', 'application/json');
 });
 
@@ -42,6 +47,7 @@ app.addHook('onError', async (req, res, error) => {
 app.post('/view', async (req, res) => {
   const { satellite, date, composite, geojson, visualization } = req.body as RequestView;
 
+  // Set work tag
   ee.data.setWorkloadTag('app-view');
 
   const { image } = compositeImage({
@@ -59,6 +65,9 @@ app.post('/view', async (req, res) => {
 // App route for exporting geotiff
 app.post('/export/geotiff', async (req, res) => {
   const { satellite, date, composite, geojson, bucket, fileNamePrefix } = req.body as RequestExport;
+
+  // Set work tag
+  ee.data.setWorkloadTag('app-export-geotiff');
 
   const { image, resolution } = compositeImage({
     satellite,
@@ -78,6 +87,9 @@ app.post('/export/geotiff', async (req, res) => {
     region: geojson,
     description,
   });
+
+  // Send database update
+  await sendDatabase(req.body as RequestExport, result);
 
   res.send(result).status(200).header('Content-Type', 'appplication/json');
 });

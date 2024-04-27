@@ -75,3 +75,14 @@ export async function exportMetadata(): Promise<RequestExportStatus> {
     );
   });
 }
+
+/**
+ * Function to cancel operation when error
+ */
+export async function cancelExport(operationName: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    ee.data.cancelOperation(operationName, (data: undefined, err: string) =>
+      err ? reject(new Error(err)) : resolve(),
+    );
+  });
+}
