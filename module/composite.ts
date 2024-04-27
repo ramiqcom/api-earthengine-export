@@ -7,7 +7,7 @@ import { RequestBody } from './type';
  * Function that accept image composite request and output an ee.Image
  * @param body
  */
-export default function compositeImage(body: RequestBody): ee.Image {
+export default function compositeImage(body: RequestBody): { image: ee.Image; resolution: number } {
   const { geojson, date, satellite, composite } = body;
 
   // Create a bounding box polygon from geojson
@@ -20,7 +20,7 @@ export default function compositeImage(body: RequestBody): ee.Image {
   const [start, end] = date;
 
   // Satellite data
-  const { ids, bands, multiplier, offset, cloud, cloud_col, resolution } = collection[satellite];
+  const { ids, bands, multiplier, offset, cloud, resolution } = collection[satellite];
 
   // Bands ori
   const bandsCon = Object.keys(bands);

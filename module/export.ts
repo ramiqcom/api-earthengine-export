@@ -1,6 +1,7 @@
 import ee from '@google/earthengine';
 import { FeatureCollection } from '@turf/turf';
 import { exportMetadata, startExport } from './ee';
+import { RequestExportStatus } from './type';
 
 export default async function exportImage({
   image,
@@ -16,7 +17,7 @@ export default async function exportImage({
   description: string;
   bucket: string;
   fileNamePrefix: string;
-}): Promise<Record<string, any>> {
+}): Promise<RequestExportStatus> {
   const task = ee.batch.Export.image.toCloudStorage({
     image,
     scale: resolution,

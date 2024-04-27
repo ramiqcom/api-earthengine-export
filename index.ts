@@ -28,62 +28,58 @@ const app = fastify({
   trustProxy: true,
 });
 
+// Hook for authentication
+app.addHook('onRequest', async () => {
+  await authenticate(key);
+});
+
+// Hook for error
+app.addHook('onError', async (req, res, error) => {
+  res.send({ message: error }).status(404).header('Content-Type', 'application/json');
+});
+
 // App route for viewing image
 app.post('/view', async (req, res) => {
   const { satellite, date, composite, geojson, visualization } = req.body as RequestView;
 
-  try {
-    await authenticate(key);
+  ee.data.setWorkloadTag('app-view');
 
-    ee.data.setWorkloadTag('app-view');
+  const { image } = compositeImage({
+    satellite,
+    date,
+    composite,
+    geojson,
+  });
 
-    const image = compositeImage({
-      satellite,
-      date,
-      composite,
-      geojson,
-    });
+  const result = await view(image, visualization, satellite);
 
-    const result = await view(image, visualization, satellite);
-
-    res.send(result).status(200).header('Content-Type', 'appplication/json');
-  } catch ({ message }) {
-    res.send({ message }).status(400).header('Content-Type', 'application/json');
-  }
+  res.send(result).status(200).header('Content-Type', 'appplication/json');
 });
 
-// App route for exporting
-app.post('/export', async (req, res) => {
+// App route for exporting geotiff
+app.post('/export/geotiff', async (req, res) => {
   const { satellite, date, composite, geojson, bucket, fileNamePrefix } = req.body as RequestExport;
 
-  try {
-    await authenticate(key);
+  const { image, resolution } = compositeImage({
+    satellite,
+    date,
+    composite,
+    geojson,
+  });
 
-    ee.data.setWorkloadTag('app-view');
+  const time = new Date().getTime();
+  const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
 
-    const { image, resolution } = compositeImage({
-      satellite,
-      date,
-      composite,
-      geojson,
-    });
+  const result = await exportImage({
+    image,
+    resolution,
+    bucket,
+    fileNamePrefix,
+    region: geojson,
+    description,
+  });
 
-    const time = new Date().getTime();
-    const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
-
-    const result = await exportImage({
-      image,
-      resolution,
-      bucket,
-      fileNamePrefix,
-      region: geojson,
-      description,
-    });
-
-    res.send(result).status(200).header('Content-Type', 'appplication/json');
-  } catch ({ message }) {
-    res.send({ message }).status(400).header('Content-Type', 'application/json');
-  }
+  res.send(result).status(200).header('Content-Type', 'appplication/json');
 });
 
 // Run the appss
