@@ -1,8 +1,12 @@
-# api-earthengine-export
+# Satellite Imagery Data Exporter API
 
-## API to view Google Earth Engine analysis result and export it
+API to generate imagery tile map and export it as GeoTIFF or tile map with Google Earth Engine.
 
-### Instruction to use
+## Demo app
+
+Cloud run: <https://api-earthengine-export-llkrp5nvaa-ez.a.run.app>
+
+## Instruction to use
 
 1. Clone the repository
 2. Run `npm install` to install packages dependency
@@ -13,7 +17,7 @@
 7. Change the value of `GOOGLE_MAPS_API_KEY` in `env` to your Google Maps API key
 8. Run `npm start` to start the server
 
-### Route list
+## Route list
 
 | Route path        | Description                                                     | Request body (JSON)                                                                       | Response body (JSON)   |
 | ----------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------- |
@@ -21,7 +25,7 @@
 | `/export/geotiff` | Route to export the request as GeoTIFF in Google Cloud Storage  | `{ geojson, satellite, composite, date, bucket, fileNamePrefix }`                         | `EarthEngineOperation` |
 | `/export/tile`    | Route to export the request as tile map in Google Cloud Storage | `{ geojson, satellite, composite, date, visualization, bucket, fileNamePrefix, maxZoom }` | `EarthEngineOperation` |
 
-### Type definition
+## Type definition
 
 | Type id        | Data type                   | Description                                                                                | Value list or example                                                                                                                                           |
 | -------------- | --------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
