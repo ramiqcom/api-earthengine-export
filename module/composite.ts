@@ -1,17 +1,16 @@
 import ee from '@google/earthengine';
-import { bbox, bboxPolygon } from '@turf/turf';
 import collection from '../data/collection.json' assert { type: 'json' };
-import { RequestBody } from './type';
+import { CompositeParameter } from './type';
 
 /**
  * Function that accept image composite request and output an ee.Image
  * @param body
  */
-export default function compositeImage(body: RequestBody): { image: ee.Image; resolution: number } {
-  const { geojson, date, satellite, composite } = body;
-
-  // Create a bounding box polygon from geojson
-  const geometry = bboxPolygon(bbox(geojson)).geometry;
+export default function compositeImage(body: CompositeParameter): {
+  image: ee.Image;
+  resolution: number;
+} {
+  const { geometry, date, satellite, composite } = body;
 
   // Create an ee.Geometry
   const bounds: ee.Geometry = ee.Geometry(geometry);

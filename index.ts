@@ -1,11 +1,12 @@
 import ee from '@google/earthengine';
 import { config } from 'dotenv';
 import fastify from 'fastify';
+import { boundingGeometry } from './module/bounds';
 import compositeImage from './module/composite';
 import { sendDatabase, updateDatabase } from './module/database';
 import { authenticate, cancelExport, exportMetadata } from './module/ee';
-import exportImage from './module/export';
-import { RequestExport, RequestView } from './module/type';
+import { exportImage, exportTile } from './module/export';
+import { RequestExport, RequestExportTile, RequestView } from './module/type';
 import view from './module/view';
 
 // Google Cloud Run will set this environment variable for you, so
@@ -46,11 +47,14 @@ app.post('/view', async (req, res) => {
   // Set work tag
   ee.data.setWorkloadTag('app-view');
 
+  // Geometry
+  const geometry = boundingGeometry(geojson);
+
   const { image } = compositeImage({
     satellite,
     date,
     composite,
-    geojson,
+    geometry,
   });
 
   const result = await view(image, visualization, satellite);
@@ -67,11 +71,14 @@ app.post('/export/geotiff', async (req, res) => {
     // Set work tag
     ee.data.setWorkloadTag('app-export-geotiff');
 
+    // Geometry
+    const geometry = boundingGeometry(geojson);
+
     const { image, resolution } = compositeImage({
       satellite,
       date,
       composite,
-      geojson,
+      geometry,
     });
 
     const time = new Date().getTime();
@@ -82,7 +89,7 @@ app.post('/export/geotiff', async (req, res) => {
       resolution,
       bucket,
       fileNamePrefix,
-      region: geojson,
+      region: geometry,
       description,
     });
 
@@ -94,6 +101,57 @@ app.post('/export/geotiff', async (req, res) => {
     // Cancel operation when error
     const { name } = await exportMetadata();
     await cancelExport(name);
+
+    // Make the error public
+    throw new Error(message);
+  }
+});
+
+// App route for exporting geotiff
+app.post('/export/tile', async (req, res) => {
+  try {
+    const { satellite, visualization, date, composite, geojson, bucket, fileNamePrefix, maxZoom } =
+      req.body as RequestExportTile;
+
+    // Set work tag
+    ee.data.setWorkloadTag('app-export-geotiff');
+
+    // Geometry
+    const geometry = boundingGeometry(geojson);
+
+    const { image } = compositeImage({
+      satellite,
+      date,
+      composite,
+      geometry,
+    });
+
+    const time = new Date().getTime();
+    const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
+
+    // Visualize the image
+    const { vis } = await view(image, visualization, satellite);
+
+    const result = await exportTile({
+      image: image.visualize(vis),
+      bucket,
+      fileNamePrefix,
+      region: geometry,
+      description,
+      maxZoom,
+    });
+
+    // Send database update
+    await sendDatabase(req.body as RequestExport, result);
+
+    res.send(result).status(200).header('Content-Type', 'appplication/json');
+  } catch ({ message }) {
+    // Cancel operation when error
+    const { name } = await exportMetadata();
+    await cancelExport(name);
+
+    // Make the error public
+    throw new Error(message);
   }
 });
 

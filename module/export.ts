@@ -1,9 +1,9 @@
 import ee from '@google/earthengine';
-import { FeatureCollection } from '@turf/turf';
+import { Geometry } from '@turf/turf';
 import { exportMetadata, startExport } from './ee';
 import { RequestExportStatus } from './type';
 
-export default async function exportImage({
+export async function exportImage({
   image,
   resolution,
   region,
@@ -13,7 +13,7 @@ export default async function exportImage({
 }: {
   image: ee.Image;
   resolution: number;
-  region: FeatureCollection;
+  region: Geometry;
   description: string;
   bucket: string;
   fileNamePrefix: string;
@@ -21,12 +21,48 @@ export default async function exportImage({
   const task = ee.batch.Export.image.toCloudStorage({
     image,
     scale: resolution,
-    region: region.features[0].geometry,
+    region,
     crs: 'EPSG:4326',
     formatOptions: { cloudOptimized: true },
     description,
     fileNamePrefix,
     bucket,
+  });
+
+  await startExport(task);
+
+  const metadata = await exportMetadata();
+
+  return metadata;
+}
+
+export async function exportTile({
+  image,
+  region,
+  description,
+  bucket,
+  fileNamePrefix,
+  maxZoom,
+}: {
+  image: ee.Image;
+  region: Geometry;
+  description: string;
+  bucket: string;
+  fileNamePrefix: string;
+  maxZoom: number;
+}): Promise<RequestExportStatus> {
+  const task = ee.batch.Export.map.toCloudStorage({
+    image,
+    description,
+    bucket,
+    path: fileNamePrefix,
+    minZoom: 0,
+    maxZoom,
+    region,
+    writePublicTiles: true,
+    skipEmptyTiles: true,
+    bucketCorsUris: ['*'],
+    mapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
   });
 
   await startExport(task);

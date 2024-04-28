@@ -1,4 +1,4 @@
-import { FeatureCollection } from '@turf/turf';
+import { FeatureCollection, Geometry } from '@turf/turf';
 
 export interface VisObject {
   bands?: string[] | string;
@@ -22,6 +22,13 @@ export interface RequestBody {
   satellite: satellite;
 }
 
+export interface CompositeParameter {
+  date: [string, string];
+  composite: 'latest' | 'cloudless' | 'median';
+  satellite: satellite;
+  geometry: Geometry;
+}
+
 export interface RequestView extends RequestBody {
   visualization: string;
 }
@@ -29,6 +36,11 @@ export interface RequestView extends RequestBody {
 export interface RequestExport extends RequestBody {
   bucket: string;
   fileNamePrefix: string;
+}
+
+export interface RequestExportTile extends RequestExport {
+  maxZoom: number;
+  visualization: string;
 }
 
 export interface RequestExportStatus {
@@ -42,7 +54,7 @@ export interface RequestExportStatus {
     updateTime: string;
     startTime: string;
     endTime?: string;
-    type: 'EXPORT_IMAGE' | 'EXPORT_FEATURES' | 'EXPORT_MAP';
+    type: 'EXPORT_IMAGE' | 'EXPORT_FEATURES' | 'EXPORT_TILES';
     attempt?: number;
     batchEecuUsageSeconds?: number;
     destinationUris?: string[];

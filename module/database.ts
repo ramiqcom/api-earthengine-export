@@ -65,12 +65,16 @@ export async function updateDatabase() {
 
     const updateTimeFormatted = parseDate(new Date(updateTime));
 
-    const [data] = await bq.query(`
+    const url = destinationUris ? `'${destinationUris[0]}'` : null;
+    const errorMessage = error ? `'${error}'` : null;
+    const eecu = batchEecuUsageSeconds ? batchEecuUsageSeconds : null;
+
+    await bq.query(`
 			UPDATE ${table}
-			SET operation_state='${state}', operation_updated='${updateTimeFormatted}', result_url='${destinationUris[0]}', error_message='${error}', eecu='${batchEecuUsageSeconds}'
+			SET operation_state='${state}', operation_updated='${updateTimeFormatted}', result_url=${url}, error_message=${errorMessage}, eecu=${eecu}
 			WHERE operation_name='${operation_name}'
 		`);
-	});
+  });
 
-	return 'update_succes';
+  return 'update_success';
 }
