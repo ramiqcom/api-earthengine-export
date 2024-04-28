@@ -1,5 +1,5 @@
 import { BigQuery } from '@google-cloud/bigquery';
-import { getOperation } from './ee';
+import { cancelExport, exportMetadata, getOperation } from './ee';
 import { RequestExport, RequestExportStatus } from './type';
 
 function bqClient() {
@@ -26,24 +26,32 @@ function parseDate(date: Date) {
 }
 
 export async function sendDatabase(req: RequestExport, res: RequestExportStatus) {
-  const { name, metadata } = res;
-  const { state, createTime, updateTime, type } = metadata;
-  const { satellite, composite, geojson, date, bucket, fileNamePrefix } = req;
+  try {
+    const { name, metadata } = res;
+    const { state, createTime, updateTime, type } = metadata;
+    const { satellite, composite, geojson, date, bucket, fileNamePrefix } = req;
 
-  const bq = bqClient();
-  const table = tableName();
+    const bq = bqClient();
+    const table = tableName();
 
-  const createTimeFormatted = parseDate(new Date(createTime));
-  const updateTimeFormatted = parseDate(new Date(updateTime));
+    const createTimeFormatted = parseDate(new Date(createTime));
+    const updateTimeFormatted = parseDate(new Date(updateTime));
 
-  const geojsonString = JSON.stringify(geojson);
+    const geojsonString = JSON.stringify(geojson);
 
-  const query = `
+    const query = `
 		INSERT INTO ${table} (operation_name, operation_state, operation_started, operation_updated, operation_type, satellite, composite, geojson, start_date, end_date, bucket, file_name_prefix)
 		VALUES ('${name}', '${state}', '${createTimeFormatted}', '${updateTimeFormatted}', '${type}', '${satellite}', '${composite}', PARSE_JSON('${geojsonString}'), '${date[0]}', '${date[1]}', '${bucket}', '${fileNamePrefix}')
 	`;
 
-  await bq.query(query);
+    await bq.query(query);
+  } catch ({ message }) {
+    // Cancel operation when error
+    const { name } = await exportMetadata();
+    await cancelExport(name);
+
+    throw new Error(message);
+  }
 }
 
 export async function updateDatabase() {

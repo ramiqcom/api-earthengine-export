@@ -4,7 +4,7 @@ import fastify from 'fastify';
 import { boundingGeometry } from './module/bounds';
 import compositeImage from './module/composite';
 import { sendDatabase, updateDatabase } from './module/database';
-import { authenticate, cancelExport, exportMetadata } from './module/ee';
+import { authenticate } from './module/ee';
 import { exportImage, exportTile } from './module/export';
 import { RequestExport, RequestExportTile, RequestView } from './module/type';
 import view from './module/view';
@@ -66,95 +66,76 @@ app.post('/view', async (req, res) => {
 
 // App route for exporting geotiff
 app.post('/export/geotiff', async (req, res) => {
-  try {
-    const { satellite, date, composite, geojson, bucket, fileNamePrefix } =
-      req.body as RequestExport;
+  const { satellite, date, composite, geojson, bucket, fileNamePrefix } = req.body as RequestExport;
 
-    // Set work tag
-    ee.data.setWorkloadTag('app-export-geotiff');
+  // Set work tag
+  ee.data.setWorkloadTag('app-export-geotiff');
 
-    // Geometry
-    const geometry = boundingGeometry(geojson);
+  // Geometry
+  const geometry = boundingGeometry(geojson);
 
-    const { image, resolution } = compositeImage({
-      satellite,
-      date,
-      composite,
-      geometry,
-    });
+  const { image, resolution } = compositeImage({
+    satellite,
+    date,
+    composite,
+    geometry,
+  });
 
-    const time = new Date().getTime();
-    const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
+  const time = new Date().getTime();
+  const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
 
-    const result = await exportImage({
-      image,
-      resolution,
-      bucket,
-      fileNamePrefix,
-      region: geometry,
-      description,
-    });
+  const result = await exportImage({
+    image,
+    resolution,
+    bucket,
+    fileNamePrefix,
+    region: geometry,
+    description,
+  });
 
-    // Send database update
-    await sendDatabase(req.body as RequestExport, result);
+  // Send database update
+  await sendDatabase(req.body as RequestExport, result);
 
-    res.status(200).send(result).header('Content-Type', 'appplication/json');
-  } catch ({ message }) {
-    // Cancel operation when error
-    const { name } = await exportMetadata();
-    await cancelExport(name);
-
-    // Make the error public
-    throw new Error(message);
-  }
+  res.status(200).send(result).header('Content-Type', 'appplication/json');
 });
 
 // App route for exporting geotiff
 app.post('/export/tile', async (req, res) => {
-  try {
-    const { satellite, visualization, date, composite, geojson, bucket, fileNamePrefix, maxZoom } =
-      req.body as RequestExportTile;
+  const { satellite, visualization, date, composite, geojson, bucket, fileNamePrefix, maxZoom } =
+    req.body as RequestExportTile;
 
-    // Set work tag
-    ee.data.setWorkloadTag('app-export-geotiff');
+  // Set work tag
+  ee.data.setWorkloadTag('app-export-geotiff');
 
-    // Geometry
-    const geometry = boundingGeometry(geojson);
+  // Geometry
+  const geometry = boundingGeometry(geojson);
 
-    const { image } = compositeImage({
-      satellite,
-      date,
-      composite,
-      geometry,
-    });
+  const { image } = compositeImage({
+    satellite,
+    date,
+    composite,
+    geometry,
+  });
 
-    const time = new Date().getTime();
-    const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
+  const time = new Date().getTime();
+  const description = `${satellite}_${date[0]}_${date[1]}_${composite}_${time}`;
 
-    // Visualize the image
-    const { vis } = await view(image, visualization, satellite);
+  // Visualize the image
+  const { vis } = await view(image, visualization, satellite);
 
-    const result = await exportTile({
-      image: image.visualize(vis),
-      bucket,
-      fileNamePrefix,
-      region: geometry,
-      description,
-      maxZoom,
-    });
+  const result = await exportTile({
+    image: image.visualize(vis),
+    bucket,
+    fileNamePrefix,
+    region: geometry,
+    description,
+    maxZoom,
+  });
 
-    // Send database update
-    await sendDatabase(req.body as RequestExport, result);
+  // Send database update
+  await sendDatabase(req.body as RequestExport, result);
 
-    res.status(200).send(result).header('Content-Type', 'appplication/json');
-  } catch ({ message }) {
-    // Cancel operation when error
-    const { name } = await exportMetadata();
-    await cancelExport(name);
-
-    // Make the error public
-    throw new Error(message);
-  }
+  res.status(200).send(result).header('Content-Type', 'appplication/json');
 });
 
 // App route to update every task to the database
