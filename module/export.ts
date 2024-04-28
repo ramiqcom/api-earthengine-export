@@ -62,7 +62,6 @@ export async function exportTile({
     writePublicTiles: true,
     skipEmptyTiles: true,
     bucketCorsUris: ['*'],
-    mapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
   });
 
   await startExport(task);

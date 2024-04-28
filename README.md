@@ -14,8 +14,7 @@ Cloud run: <https://api-earthengine-export-llkrp5nvaa-ez.a.run.app>
 4. Change the value of `SERVICE_ACCOUNT_KEY` in `env` to your Google Cloud Platform service account key to authenticate Google Earth Engine
 5. Change the value of `PROJECT_ID` in `env` to your Google Cloud Platform project id
 6. Change the value of `EXPORT_TABLE` in `env` to your SQL table address
-7. Change the value of `GOOGLE_MAPS_API_KEY` in `env` to your Google Maps API key
-8. Run `npm start` to start the server
+7. Run `npm start` to start the server
 
 ## Route list
 
