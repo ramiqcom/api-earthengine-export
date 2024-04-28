@@ -15,7 +15,7 @@ export default function compositeImage(body: CompositeParameter): {
   // Validation for satellite id
   if (!collection[satellite]) {
     throw new Error(
-      `Satellite id ${satellite} is not available. The only satellite id available area 'sentinel-2' and 'landsat'`,
+      `Satellite id '${satellite}' is not available. The only satellite id available area 'sentinel-2' and 'landsat'`,
     );
   }
 
@@ -26,6 +26,13 @@ export default function compositeImage(body: CompositeParameter): {
   if (new Date(start).getTime() > new Date(end).getTime()) {
     throw new Error(
       `End date ${end} is earlier than start date ${start}. End date should be later`,
+    );
+  }
+
+  // Validation for composite
+  if (composite != 'cloudless' && composite != 'latest' && composite != 'median') {
+    throw new Error(
+      `Composite type '${composite}' is not available. Use composite 'cloudless', 'latest', or 'median' instead`,
     );
   }
 

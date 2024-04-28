@@ -37,6 +37,8 @@ app.addHook('onRequest', async () => {
 
 // Error handler
 app.setErrorHandler(async (error, req, res) => {
+  const { message } = error;
+  console.error(message);
   res.status(404).send({ message: error.message }).header('Content-Type', 'application/json');
 });
 
