@@ -66,7 +66,7 @@ export async function updateDatabase() {
     const updateTimeFormatted = parseDate(new Date(updateTime));
 
     const url = destinationUris ? `'${destinationUris[0]}'` : null;
-    const errorMessage = error ? `'${error}'` : null;
+    const errorMessage = error ? `'${error.message}'` : null;
     const eecu = batchEecuUsageSeconds ? batchEecuUsageSeconds : null;
 
     await bq.query(`

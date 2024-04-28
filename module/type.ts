@@ -67,7 +67,7 @@ export interface RequestExportStatus {
     }[];
   };
   done?: boolean;
-  error?: string;
+  error?: { code: number; message: string };
   response: {
     '@type': string;
   };
