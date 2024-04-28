@@ -59,7 +59,7 @@ async function stretch(
 ): Promise<VisObject> {
   const geometry: ee.Geometry = image.geometry();
   const percentile: ee.Dictionary = image.select(bands).reduceRegion({
-    scale: 300,
+    scale: 100,
     geometry,
     maxPixels: 1e13,
     reducer: ee.Reducer.percentile([1, 99]),

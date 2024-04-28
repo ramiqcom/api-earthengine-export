@@ -151,7 +151,7 @@ function cloudMaskS2(
   const scl = image.select('SCL');
   const mask = scl
     .eq(3)
-    .or(scl.gte(7).and(scl.lte(10)))
+    .or(scl.gte(8).and(scl.lte(10)))
     .eq(0);
   return image.select(bands[0], bands[1]).updateMask(mask).multiply(multiplier).add(offset);
 }
