@@ -22,9 +22,6 @@ const host = IS_GOOGLE_CLOUD_RUN ? '0.0.0.0' : undefined;
 // Run dotenv
 config();
 
-// Google private key
-const key = process.env.SERVICE_ACCOUNT_KEY;
-
 // App setting
 const app = fastify({
   trustProxy: true,
@@ -32,12 +29,15 @@ const app = fastify({
 
 // Hook for authentication
 app.addHook('onRequest', async () => {
+  // Authenticate Google Earth Engine with api key
+  // Google private key
+  const key = process.env.SERVICE_ACCOUNT_KEY;
   await authenticate(key);
 });
 
-// Hook for error
-app.addHook('onError', async (req, res, error) => {
-  res.send({ message: error }).status(404).header('Content-Type', 'application/json');
+// Error handler
+app.setErrorHandler(async (error, req, res) => {
+  res.status(404).send({ message: error.message }).header('Content-Type', 'application/json');
 });
 
 // App route for viewing image
@@ -59,7 +59,7 @@ app.post('/view', async (req, res) => {
 
   const result = await view(image, visualization, satellite);
 
-  res.send(result).status(200).header('Content-Type', 'appplication/json');
+  res.status(200).send(result).header('Content-Type', 'appplication/json');
 });
 
 // App route for exporting geotiff
@@ -96,7 +96,7 @@ app.post('/export/geotiff', async (req, res) => {
     // Send database update
     await sendDatabase(req.body as RequestExport, result);
 
-    res.send(result).status(200).header('Content-Type', 'appplication/json');
+    res.status(200).send(result).header('Content-Type', 'appplication/json');
   } catch ({ message }) {
     // Cancel operation when error
     const { name } = await exportMetadata();
@@ -144,7 +144,7 @@ app.post('/export/tile', async (req, res) => {
     // Send database update
     await sendDatabase(req.body as RequestExport, result);
 
-    res.send(result).status(200).header('Content-Type', 'appplication/json');
+    res.status(200).send(result).header('Content-Type', 'appplication/json');
   } catch ({ message }) {
     // Cancel operation when error
     const { name } = await exportMetadata();
@@ -158,7 +158,7 @@ app.post('/export/tile', async (req, res) => {
 // App route to update every task to the database
 app.get('/update', async (req, res) => {
   const message = await updateDatabase();
-  res.send({ message }).status(200).header('Content-Type', 'application/json');
+  res.status(200).send({ message }).header('Content-Type', 'application/json');
 });
 
 // Run the appss

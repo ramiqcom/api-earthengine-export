@@ -12,11 +12,25 @@ export default function compositeImage(body: CompositeParameter): {
 } {
   const { geometry, date, satellite, composite } = body;
 
-  // Create an ee.Geometry
-  const bounds: ee.Geometry = ee.Geometry(geometry);
+  // Validation for satellite id
+  if (!collection[satellite]) {
+    throw new Error(
+      `Satellite id ${satellite} is not available. The only satellite id available area 'sentinel-2' and 'landsat'`,
+    );
+  }
 
   // Date
   const [start, end] = date;
+
+  // Validation for date
+  if (new Date(start).getTime() > new Date(end).getTime()) {
+    throw new Error(
+      `End date ${end} is earlier than start date ${start}. End date should be later`,
+    );
+  }
+
+  // Create an ee.Geometry
+  const bounds: ee.Geometry = ee.Geometry(geometry);
 
   // Satellite data
   const { ids, bands, multiplier, offset, cloud, resolution } = collection[satellite];
