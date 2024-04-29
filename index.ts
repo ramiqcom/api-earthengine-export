@@ -19,9 +19,6 @@ const port = (process.env.PORT || 8080) as number;
 // You must listen on all IPV4 addresses in Cloud Run
 const host = IS_GOOGLE_CLOUD_RUN ? '0.0.0.0' : undefined;
 
-// Google private service account key
-const key = process.env.SERVICE_ACCOUNT_KEY;
-
 // Run dotenv
 config();
 
@@ -42,7 +39,7 @@ app.post('/view', async (req, res) => {
   const { satellite, date, composite, geojson, visualization } = req.body as RequestView;
 
   // Authenticate
-  await authenticate(key);
+  await authenticate(process.env.SERVICE_ACCOUNT_KEY);
 
   // Set work tag
   ee.data.setWorkloadTag('app-view');
@@ -67,7 +64,7 @@ app.post('/export/geotiff', async (req, res) => {
   const { satellite, date, composite, geojson, bucket, fileNamePrefix } = req.body as RequestExport;
 
   // Authenticate
-  await authenticate(key);
+  await authenticate(process.env.SERVICE_ACCOUNT_KEY);
 
   // Set work tag
   ee.data.setWorkloadTag('app-export-geotiff');
@@ -106,7 +103,7 @@ app.post('/export/tile', async (req, res) => {
     req.body as RequestExportTile;
 
   // Authenticate
-  await authenticate(key);
+  await authenticate(process.env.SERVICE_ACCOUNT_KEY);
 
   // Set work tag
   ee.data.setWorkloadTag('app-export-tile');
@@ -145,7 +142,7 @@ app.post('/export/tile', async (req, res) => {
 // App route to update every task to the database
 app.get('/update', async (req, res) => {
   // Authenticate
-  await authenticate(key);
+  await authenticate(process.env.SERVICE_ACCOUNT_KEY);
 
   const message = await updateDatabase();
   res.status(200).send({ message }).header('Content-Type', 'application/json');
