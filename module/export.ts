@@ -19,7 +19,7 @@ export async function exportImage({
   fileNamePrefix: string;
 }): Promise<RequestExportStatus> {
   const task = ee.batch.Export.image.toCloudStorage({
-    image,
+    image: image.multiply(1e4).toUint16(),
     scale: resolution,
     region,
     crs: 'EPSG:4326',
