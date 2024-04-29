@@ -25,6 +25,13 @@ function parseDate(date: Date) {
   return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
 }
 
+export async function getDatabase() {
+  const bq = bqClient();
+  const table = tableName();
+  const [result] = await bq.query(`SELECT * FROM ${table}`);
+  return result;
+}
+
 export async function sendDatabase(req: RequestExport, res: RequestExportStatus) {
   try {
     const { name, metadata } = res;

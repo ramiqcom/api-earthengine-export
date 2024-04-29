@@ -3,7 +3,7 @@ import { config } from 'dotenv';
 import fastify from 'fastify';
 import { boundingGeometry } from './module/bounds';
 import compositeImage from './module/composite';
-import { sendDatabase, updateDatabase } from './module/database';
+import { getDatabase, sendDatabase, updateDatabase } from './module/database';
 import { authenticate } from './module/ee';
 import { exportImage, exportTile } from './module/export';
 import { RequestExport, RequestExportTile, RequestView } from './module/type';
@@ -19,20 +19,15 @@ const port = (process.env.PORT || 8080) as number;
 // You must listen on all IPV4 addresses in Cloud Run
 const host = IS_GOOGLE_CLOUD_RUN ? '0.0.0.0' : undefined;
 
+// Google private service account key
+const key = process.env.SERVICE_ACCOUNT_KEY;
+
 // Run dotenv
 config();
 
 // App setting
 const app = fastify({
   trustProxy: true,
-});
-
-// Hook for authentication
-app.addHook('onRequest', async () => {
-  // Authenticate Google Earth Engine with api key
-  // Google private key
-  const key = process.env.SERVICE_ACCOUNT_KEY;
-  await authenticate(key);
 });
 
 // Error handler
@@ -45,6 +40,9 @@ app.setErrorHandler(async (error, req, res) => {
 // App route for viewing image
 app.post('/view', async (req, res) => {
   const { satellite, date, composite, geojson, visualization } = req.body as RequestView;
+
+  // Authenticate
+  await authenticate(key);
 
   // Set work tag
   ee.data.setWorkloadTag('app-view');
@@ -67,6 +65,9 @@ app.post('/view', async (req, res) => {
 // App route for exporting geotiff
 app.post('/export/geotiff', async (req, res) => {
   const { satellite, date, composite, geojson, bucket, fileNamePrefix } = req.body as RequestExport;
+
+  // Authenticate
+  await authenticate(key);
 
   // Set work tag
   ee.data.setWorkloadTag('app-export-geotiff');
@@ -104,8 +105,11 @@ app.post('/export/tile', async (req, res) => {
   const { satellite, visualization, date, composite, geojson, bucket, fileNamePrefix, maxZoom } =
     req.body as RequestExportTile;
 
+  // Authenticate
+  await authenticate(key);
+
   // Set work tag
-  ee.data.setWorkloadTag('app-export-geotiff');
+  ee.data.setWorkloadTag('app-export-tile');
 
   // Geometry
   const geometry = boundingGeometry(geojson);
@@ -140,8 +144,17 @@ app.post('/export/tile', async (req, res) => {
 
 // App route to update every task to the database
 app.get('/update', async (req, res) => {
+  // Authenticate
+  await authenticate(key);
+
   const message = await updateDatabase();
   res.status(200).send({ message }).header('Content-Type', 'application/json');
+});
+
+// App route to get data of all export from the database
+app.get('/database', async (req, res) => {
+  const data = await getDatabase();
+  res.status(200).send(data).header('Content-Type', 'application/json');
 });
 
 // Run the appss
