@@ -44,7 +44,7 @@
 #   Cloud Run builds from source        - https://cloud.google.com/run/docs/deploying-source-code
 #   Principle of least privilege        - https://cloud.google.com/blog/products/identity-security/dont-get-pwned-practicing-the-principle-of-least-privilege
 
-name: Deploy to Cloud Run from Source Action
+name: Build Docker and Deploy to Cloud Run
 
 on:
   push:
@@ -54,10 +54,45 @@ env:
   CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }} # TODO: update Google Cloud project id
   SERVICE: ${{ vars.SERVICE_NAME }} # TODO: update Cloud Run service name
   REGION: ${{ vars.REGION }} # TODO: update Cloud Run service region
+  SERVICE_ACCOUNT_KEY_URL: ${{ secrets.SERVICE_ACCOUNT_KEY_URL }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  PROJECT_ID: ${{ vars.PROJECT_ID }}
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+  EXPORT_TABLE: ${{ vars.EXPORT_TABLE }}
 
 jobs:
-  deploy:
+  build-docker-and-push-to-gcr:
     # Add 'id-token' with the intended permissions for workload identity federation
+    permissions:
+      contents: read
+      id-token: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ env.CREDENTIALS }}
+
+      - name: Push to GCR
+        uses: RafikFarhad/push-to-gcr-github-action@v5-rc1
+        with:
+          registry: gcr.io
+          project_id: ${{ env.PROJECT_ID }}
+          image_name: ${{ env.IMAGE_NAME }}
+          image_tag: latest
+          dockerfile: ./Dockerfile
+          context: .
+          build_args: service_account_key_url=${{ env.SERVICE_ACCOUNT_KEY_URL }},gh_token=${{ env.GH_TOKEN }},project_id=${{ env.PROJECT_ID }},export_table=${{ env.EXPORT_TABLE }}
+
+  deploy-to-cloud-run:
+    needs: build-docker-and-push-to-gcr
+
     permissions:
       contents: read
       id-token: write
@@ -80,7 +115,12 @@ jobs:
           service: ${{ env.SERVICE }}
           region: ${{ env.REGION }}
           # NOTE: If required, update to the appropriate source folder
-          source: ./
+          image: gcr.io/${{ env.PROJECT_ID}}/${{ env.IMAGE_NAME }}:latest
+          env_vars: |
+            SERVICE_ACCOUNT_KEY_URL=${{ env.SERVICE_ACCOUNT_KEY_URL }}
+            GH_TOKEN=${{ env.GH_TOKEN }}
+            EXPORT_TABLE=${{ env.EXPORT_TABLE }}
+            PROJECT_ID=${{ env.PROJECT_ID }}
 
       # If required, use the Cloud Run url output in later steps
       - name: Show Output

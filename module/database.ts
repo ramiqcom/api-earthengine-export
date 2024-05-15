@@ -1,10 +1,15 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import { cancelExport, exportMetadata, getOperation } from './ee';
+import getKey from './getKey';
 import { RequestExport, RequestExportStatus } from './type';
 
-function bqClient() {
+async function bqClient() {
   const projectId = process.env.PROJECT_ID;
-  const { client_email, private_key } = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
+
+  // Key
+  const key = await getKey();
+
+  const { client_email, private_key } = key;
 
   return new BigQuery({
     projectId,
@@ -26,7 +31,7 @@ function parseDate(date: Date) {
 }
 
 export async function getDatabase() {
-  const bq = bqClient();
+  const bq = await bqClient();
   const table = tableName();
   const [result] = await bq.query(`SELECT * FROM ${table}`);
   return result;
@@ -38,7 +43,7 @@ export async function sendDatabase(req: RequestExport, res: RequestExportStatus)
     const { state, createTime, updateTime, type } = metadata;
     const { satellite, composite, geojson, date, bucket, fileNamePrefix } = req;
 
-    const bq = bqClient();
+    const bq = await bqClient();
     const table = tableName();
 
     const createTimeFormatted = parseDate(new Date(createTime));
@@ -62,7 +67,7 @@ export async function sendDatabase(req: RequestExport, res: RequestExportStatus)
 }
 
 export async function updateDatabase() {
-  const bq = bqClient();
+  const bq = await bqClient();
   const table = tableName();
   const [result] = await bq.query(
     `SELECT operation_name FROM ${table} WHERE (operation_state LIKE '%ING')`,

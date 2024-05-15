@@ -6,6 +6,7 @@ import compositeImage from './module/composite';
 import { getDatabase, sendDatabase, updateDatabase } from './module/database';
 import { authenticate } from './module/ee';
 import { exportImage, exportTile } from './module/export';
+import getKey from './module/getKey';
 import { RequestExport, RequestExportTile, RequestView } from './module/type';
 import view from './module/view';
 
@@ -38,8 +39,12 @@ app.setErrorHandler(async (error, req, res) => {
 app.post('/view', async (req, res) => {
   const { satellite, date, composite, geojson, visualization } = req.body as RequestView;
 
+  // Key
+  const key = await getKey();
+  console.log(key);
+
   // Authenticate
-  await authenticate(process.env.SERVICE_ACCOUNT_KEY);
+  await authenticate(key);
 
   // Set work tag
   ee.data.setWorkloadTag('app-view');
@@ -63,8 +68,11 @@ app.post('/view', async (req, res) => {
 app.post('/export/geotiff', async (req, res) => {
   const { satellite, date, composite, geojson, bucket, fileNamePrefix } = req.body as RequestExport;
 
+  // Key
+  const key = await getKey();
+
   // Authenticate
-  await authenticate(process.env.SERVICE_ACCOUNT_KEY);
+  await authenticate(key);
 
   // Set work tag
   ee.data.setWorkloadTag('app-export-geotiff');
@@ -102,8 +110,11 @@ app.post('/export/tile', async (req, res) => {
   const { satellite, visualization, date, composite, geojson, bucket, fileNamePrefix, maxZoom } =
     req.body as RequestExportTile;
 
+  // Key
+  const key = await getKey();
+
   // Authenticate
-  await authenticate(process.env.SERVICE_ACCOUNT_KEY);
+  await authenticate(key);
 
   // Set work tag
   ee.data.setWorkloadTag('app-export-tile');
@@ -141,8 +152,11 @@ app.post('/export/tile', async (req, res) => {
 
 // App route to update every task to the database
 app.get('/update', async (req, res) => {
+  // Key
+  const key = await getKey();
+
   // Authenticate
-  await authenticate(process.env.SERVICE_ACCOUNT_KEY);
+  await authenticate(key);
 
   const message = await updateDatabase();
   res.status(200).send({ message }).header('Content-Type', 'application/json');
