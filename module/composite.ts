@@ -40,20 +40,26 @@ export default function compositeImage(body: CompositeParameter): {
   const bounds: ee.Geometry = ee.Geometry(geometry);
 
   // Satellite data
-  const { ids, bands, multiplier, offset, cloud, resolution } = collection[satellite];
+  const { ids, bands, multiplier, offset, cloud, resolution, cloud_col } = collection[satellite];
 
   // Bands ori
   const bandsCon = Object.keys(bands);
   const bandsOri = Object.values(bands);
 
   // Filter collection
-  const col: ee.ImageCollection = ee.ImageCollection(
-    ee
-      .FeatureCollection(
-        ids.map((id) => ee.ImageCollection(id).filterBounds(bounds).filterDate(start, end)),
-      )
-      .flatten(),
-  );
+  let col: ee.ImageCollection;
+
+  if (ids.length > 1) {
+    col = ee.ImageCollection(
+      ee
+        .FeatureCollection(
+          ids.map((id) => ee.ImageCollection(id).filterBounds(bounds).filterDate(start, end)),
+        )
+        .flatten(),
+    );
+  } else {
+    col = ee.ImageCollection(ids[0]).filterBounds(bounds).filterDate(start, end);
+  }
 
   // Image
   let image: ee.Image;
@@ -65,6 +71,11 @@ export default function compositeImage(body: CompositeParameter): {
       landsat: cloudMaskLandsat,
       'sentinel-2': cloudMaskS2,
     };
+
+    if (satellite == 'sentinel-2') {
+      const cloudCol = ee.ImageCollection(cloud_col).filterBounds(bounds).filterDate(start, end);
+      col = col.linkCollection(cloudCol, 'cs');
+    }
 
     // Get the cloud mask function
     const cloudMask = cloudMaskingProp[satellite];
@@ -148,10 +159,6 @@ function cloudMaskS2(
   multiplier: number,
   offset: number,
 ): ee.Image {
-  const scl = image.select('SCL');
-  const mask = scl
-    .eq(3)
-    .or(scl.gte(8).and(scl.lte(10)))
-    .eq(0);
+  const mask = image.select('cs').gt(0.6);
   return image.select(bands[0], bands[1]).updateMask(mask).multiply(multiplier).add(offset);
 }
