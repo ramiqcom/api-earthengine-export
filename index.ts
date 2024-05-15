@@ -41,7 +41,6 @@ app.post('/view', async (req, res) => {
 
   // Key
   const key = await getKey();
-  console.log(key);
 
   // Authenticate
   await authenticate(key);
