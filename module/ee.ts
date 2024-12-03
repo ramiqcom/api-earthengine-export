@@ -1,5 +1,5 @@
 import ee from '@google/earthengine';
-import { MapId, RequestExportStatus, VisObject } from '../module/type';
+import { MapId, RequestExportStatus, VisObject } from './type';
 
 /**
  * Function to authenticate EE
